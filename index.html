@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বাংলাদেশ ভ্রমণ ট্র্যাকার প্রো</title>
+
+    <meta property="og:title" content="আমার বাংলাদেশ ভ্রমণ ট্র্যাকার">
+    <meta property="og:description" content="আমি কয়টি জেলা ভ্রমণ করেছি তা দেখুন! আপনিও আপনার ভ্রমণ ট্র্যাক করুন।">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1582650625119-3a31f8fa2699">
+    <meta property="og:type" content="website">
+
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-color: #006a4e; --bg-color: #f8fafc; --card-bg: #ffffff; --text-main: #1e293b; --border: #e2e8f0; }
+        body { font-family: 'Anek Bangla', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; }
+        .sticky-header { position: sticky; top: 0; background-color: var(--bg-color); z-index: 1000; padding: 10px 15px 5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-bottom: 1px solid var(--border); }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 15px 30px; }
+        header h1 { text-align: center; margin: 0 0 10px; font-size: 1.3rem; }
+        .progress-wrapper { position: relative; margin: 30px 0 10px; background: var(--border); height: 8px; border-radius: 10px; }
+        .progress-bar { height: 100%; background: linear-gradient(270deg, #10b981, var(--primary-color)); width: 0%; border-radius: 10px; transition: width 0.4s; position: absolute; right: 0; }
+        #walker-container { position: absolute; right: 100%; top: -28px; transform: translateX(50%); transition: 0.4s; }
+        #walker-img { width: 22px; height: 22px; object-fit: contain; }
+        .stats-summary { display: flex; justify-content: space-between; font-weight: bold; padding: 6px 12px; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--border); font-size: 0.85rem; }
+        
+        /* ব্যাজ স্টাইল */
+        .badge-container { display: flex; justify-content: center; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .badge { padding: 4px 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; font-size: 0.65rem; opacity: 0.3; filter: grayscale(1); display: flex; align-items: center; gap: 3px; }
+        .badge.active { opacity: 1; filter: grayscale(0); border-color: var(--primary-color); background: #dcfce7; font-weight: bold; }
+        .badge.special { border-color: #f59e0b; background: #fffbeb; }
+        .badge.special.active { background: #fef3c7; border-color: #f59e0b; color: #b45309; }
+
+        .division-header { display: flex; justify-content: space-between; margin: 20px 0 8px; padding-left: 10px; border-left: 5px solid var(--primary-color); font-size: 1rem; }
+        .district-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; }
+        .district-card { background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; font-size: 0.85rem; transition: 0.2s; }
+        .district-card.completed { background: #dcfce7; border-color: var(--primary-color); color: var(--primary-color); font-weight: bold; }
+        .checkbox { width: 14px; height: 14px; border: 2px solid #cbd5e1; border-radius: 3px; margin-right: 8px; }
+        .completed .checkbox { background: var(--primary-color); border-color: var(--primary-color); position: relative; }
+        .completed .checkbox::after { content: '✓'; color: white; font-size: 10px; position: absolute; left: 2px; top: -1px; }
+        
+        .btn { background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: 'Anek Bangla'; font-size: 0.9rem; margin: 5px; }
+        .share-trigger { background: #f59e0b; width: 100%; margin: 15px 0; font-weight: bold; font-size: 1rem; color: #fff; box-shadow: 0 4px 0 #d97706; }
+        .backup-section { background: linear-gradient(135deg, #006a4e, #10b981); color: white; padding: 20px; border-radius: 15px; margin-top: 30px; text-align: center; }
+        
+        #celebration { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-bg); padding: 25px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); text-align: center; z-index: 4000; border: 3px solid var(--primary-color); width: 80%; max-width: 300px; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3999; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div id="celebration">
+    <h2 style="color: var(--primary-color); margin-top: 0;">অসাধারণ! 🏆</h2>
+    <p id="celebMsg" style="font-weight: bold; margin: 10px 0; font-size: 0.9rem;"></p>
+    <button onclick="closeCeleb()" class="btn">চালিয়ে যান</button>
+</div>
+
+<div class="sticky-header">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <header><h1>🇧🇩 ভ্রমণ ট্র্যাকার প্রো</h1></header>
+        <div class="stats-summary">
+            <span>ঘুরেছি: <span id="vCount">0</span>/64</span>
+            <span>অগ্রগতি: <span id="percent">0%</span></span>
+        </div>
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progressBar">
+                <div id="walker-container"><img id="walker-img" src="https://cdn-icons-png.flaticon.com/512/10815/10815893.png"></div>
+            </div>
+        </div>
+        
+        <div class="badge-container">
+            <div class="badge" id="badge-1">নবিশ</div>
+            <div class="badge" id="badge-10">পর্যটক</div>
+            <div class="badge" id="badge-30">অভিযাত্রী</div>
+            <div class="badge" id="badge-50">ট্রাভেলার</div>
+            <div class="badge" id="badge-64">রাজা</div>
+            <div class="badge special" id="badge-hill">⛰️ হিল ট্র্যাকার</div>
+            <div class="badge special" id="badge-beach">🏖️ বিচ লাভার</div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <button class="btn share-trigger" onclick="alert('শেয়ার কার্ড ফিচারটি আগের মতোই কাজ করবে!')"> শেয়ার কার্ড তৈরি করুন</button>
+    <div id="mainContent"></div>
+    <div class="backup-section">
+        <h3 style="margin-top:0;">💾 ডেটা কন্ট্রোল</h3>
+        <button class="btn" onclick="exportData()">ব্যাকআপ কোড কপি</button>
+        <button class="btn" style="background:#ef4444" onclick="resetData()">রিসেট করুন</button>
+    </div>
+</div>
+
+<script>
+    const divisions = {
+        "ঢাকা বিভাগ": ["ঢাকা", "ফরিদপুর", "গাজীপুর", "গোপালগঞ্জ", "কিশোরগঞ্জ", "মাদারীপুর", "মানিকগঞ্জ", "মুন্সীগঞ্জ", "নারায়ণগঞ্জ", "নরসিংদী", "রাজবাড়ী", "শরীয়তপুর", "টাঙ্গাইল"],
+        "চট্টগ্রাম বিভাগ": ["বান্দরবান", "ব্রাহ্মণবাড়িয়া", "চাঁদপুর", "চট্টগ্রাম", "কুমিল্লা", "কক্সবাজার", "ফেনী", "খাগড়াছড়ি", "লক্ষ্মীপুর", "নোয়াখালী", "রাঙ্গামাটি"],
+        "রাজশাহী বিভাগ": ["বগুড়া", "জয়পুরহাট", "নওগাঁ", "নাটোর", "চাঁপাইনবাবগঞ্জ", "পাবনা", "রাজশাহী", "সিরাজগঞ্জ"],
+        "খুলনা বিভাগ": ["বাগেরহাট", "চুয়াডাঙ্গা", "যশোর", "ঝিনাইদহ", "খুলনা", "কুষ্টিয়া", "মাগুরা", "মেহেরপুর", "নড়াইল", "সাতক্ষীরা"],
+        "বরিশাল বিভাগ": ["বরগুনা", "বরিশাল", "ভোলা", "ঝালকাঠি", "পটুয়াখালী", "পিরোজপুর"],
+        "সিলেট বিভাগ": ["হবিগঞ্জ", "মৌলভীবাজার", "সুনামগঞ্জ", "সিলেট"],
+        "রংপুর বিভাগ": ["দিনাজপুর", "গাইবান্ধা", "কুড়িগ্রাম", "লালমনিরহাট", "নীলফামারী", "পঞ্চগড়", "রংপুর", "ঠাকুরগাঁও"],
+        "ময়মনসিংহ বিভাগ": ["জামালপুর", "ময়মনসিংহ", "নেত্রকোণা", "শেরপুর"]
+    };
+
+    let visited = JSON.parse(localStorage.getItem('bdTravelData')) || [];
+
+    function render() {
+        const content = document.getElementById('mainContent');
+        content.innerHTML = '';
+        for (const div in divisions) {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `<div class="division-header"><b>${div}</b></div>`;
+            const grid = document.createElement('div');
+            grid.className = 'district-grid';
+            divisions[div].forEach(d => {
+                const card = document.createElement('div');
+                card.className = `district-card ${visited.includes(d) ? 'completed' : ''}`;
+                card.innerHTML = `<div class="checkbox"></div><span>${d}</span>`;
+                card.onclick = () => {
+                    visited.includes(d) ? visited = visited.filter(i => i !== d) : visited.push(d);
+                    localStorage.setItem('bdTravelData', JSON.stringify(visited));
+                    render();
+                };
+                grid.appendChild(card);
+            });
+            wrap.appendChild(grid);
+            content.appendChild(wrap);
+        }
+        updateStats();
+    }
+
+    function updateStats() {
+        const count = visited.length;
+        document.getElementById('vCount').innerText = count;
+        const p = Math.round((count / 64) * 100);
+        document.getElementById('percent').innerText = p + '%';
+        document.getElementById('progressBar').style.width = p + '%';
+
+        // সাধারণ ব্যাজ আপডেট
+        [1, 10, 30, 50, 64].forEach(m => {
+            document.getElementById(`badge-${m}`).classList.toggle('active', count >= m);
+        });
+
+        // হিল ট্র্যাকার চেক (বান্দরবান, রাঙ্গামাটি, খাগড়াছড়ি)
+        const hills = ["বান্দরবান", "রাঙ্গামাটি", "খাগড়াছড়ি"];
+        const hasHills = hills.every(h => visited.includes(h));
+        const hillBadge = document.getElementById('badge-hill');
+        if(hasHills && !hillBadge.classList.contains('active')) {
+            showCeleb("⛰️ আপনি 'হিল ট্র্যাকার' ব্যাজ পেয়েছেন!");
+        }
+        hillBadge.classList.toggle('active', hasHills);
+
+        // বিচ লাভার চেক (কক্সবাজার, পটুয়াখালী, ভোলা)
+        const beaches = ["কক্সবাজার", "পটুয়াখালী", "ভোলা"];
+        const hasBeaches = beaches.every(b => visited.includes(b));
+        const beachBadge = document.getElementById('badge-beach');
+        if(hasBeaches && !beachBadge.classList.contains('active')) {
+            showCeleb("🏖️ আপনি 'বিচ লাভার' ব্যাজ পেয়েছেন!");
+        }
+        beachBadge.classList.toggle('active', hasBeaches);
+    }
+
+    function showCeleb(msg) {
+        document.getElementById('celebMsg').innerText = msg;
+        document.getElementById('celebration').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closeCeleb() {
+        document.getElementById('celebration').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function resetData() {
+        if(confirm("সব মুছতে চান?")) { visited = []; localStorage.clear(); render(); }
+    }
+
+    function exportData() {
+        const code = btoa(JSON.stringify(visited));
+        navigator.clipboard.writeText(code).then(() => alert("কোড কপি হয়েছে!"));
+    }
+
+    render();
+</script>
+</body>
+</html>
